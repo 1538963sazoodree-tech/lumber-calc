@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор кубатуры доски и бруса — онлайн расчёт м³ и м²</title>
+<meta name="description" content="Онлайн калькулятор кубатуры доски и бруса: рассчитайте объём пиломатериала в м³, площадь в м² и количество штук в кубе. Быстро и точно.">
+<style>
+  :root{
+    --bg:#080b12;
+    --bg2:#0d1220;
+    --card:#0f1524;
+    --cyan:#00f0ff;
+    --magenta:#ff2bd6;
+    --lime:#8dff5e;
+    --text:#e6f1ff;
+    --muted:#7b8aa8;
+    --line:rgba(0,240,255,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{min-height:100%}
+  body{
+    font-family:'Segoe UI',Roboto,system-ui,-apple-system,sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(0,240,255,.10), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(255,43,214,.10), transparent 45%),
+      var(--bg);
+    color:var(--text);
+    display:flex;
+    justify-content:center;
+    padding:32px 16px 60px;
+    min-height:100vh;
+  }
+  .wrap{width:100%;max-width:560px}
+
+  h1{
+    font-size:clamp(20px,5vw,26px);
+    font-weight:800;
+    text-align:center;
+    line-height:1.25;
+    letter-spacing:.5px;
+    background:linear-gradient(90deg,var(--cyan),var(--magenta));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    filter:drop-shadow(0 0 14px rgba(0,240,255,.35));
+    margin-bottom:8px;
+  }
+  .sub{
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:22px;
+  }
+
+  .card{
+    background:linear-gradient(160deg,var(--card),var(--bg2));
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:22px 20px 24px;
+    box-shadow:0 0 0 1px rgba(255,255,255,.02) inset,
+               0 20px 50px -20px rgba(0,240,255,.25),
+               0 0 60px -30px rgba(255,43,214,.35);
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute;inset:-2px;
+    background:conic-gradient(from 0deg, transparent, rgba(0,240,255,.25), transparent 30%, rgba(255,43,214,.25), transparent 60%);
+    animation:spin 12s linear infinite;
+    opacity:.5;
+    pointer-events:none;
+    z-index:0;
+    mask:linear-gradient(#000,#000) content-box, linear-gradient(#000,#000);
+    -webkit-mask:linear-gradient(#000,#000) content-box, linear-gradient(#000,#000);
+    -webkit-mask-composite:xor;
+    mask-composite:exclude;
+    border-radius:22px;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .card > *{position:relative;z-index:1}
+
+  /* Tabs */
+  .tabs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:14px;
+    padding:5px;
+    margin-bottom:20px;
+  }
+  .tab{
+    appearance:none;border:0;cursor:pointer;
+    background:transparent;color:var(--muted);
+    font-size:13.5px;font-weight:700;letter-spacing:.3px;
+    padding:11px 8px;border-radius:10px;
+    transition:.25s;font-family:inherit;
+  }
+  .tab:hover{color:var(--text)}
+  .tab.active{
+    color:#04121a;
+    background:linear-gradient(135deg,var(--cyan),#59ffe0);
+    box-shadow:0 0 18px rgba(0,240,255,.55), 0 0 40px -8px rgba(0,240,255,.6);
+    text-shadow:none;
+  }
+
+  .pane{display:none;animation:fade .25s ease}
+  .pane.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* Fields */
+  .field{margin-bottom:14px}
+  label{
+    display:block;font-size:12px;letter-spacing:.6px;
+    text-transform:uppercase;color:var(--muted);
+    margin-bottom:7px;font-weight:600;
+  }
+  .input-wrap{position:relative}
+  input[type=number]{
+    width:100%;
+    background:rgba(0,240,255,.04);
+    border:1px solid rgba(0,240,255,.22);
+    border-radius:12px;
+    color:var(--text);
+    font-size:17px;font-weight:600;
+    font-family:inherit;
+    padding:13px 52px 13px 14px;
+    outline:none;
+    transition:.2s;
+    -moz-appearance:textfield;
+  }
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]:focus{
+    border-color:var(--cyan);
+    background:rgba(0,240,255,.08);
+    box-shadow:0 0 0 3px rgba(0,240,255,.14), 0 0 22px -4px rgba(0,240,255,.6);
+  }
+  .unit{
+    position:absolute;right:14px;top:50%;transform:translateY(-50%);
+    font-size:12px;font-weight:700;color:var(--cyan);
+    opacity:.75;pointer-events:none;letter-spacing:.5px;
+  }
+
+  /* Results */
+  .results{
+    margin-top:20px;
+    border:1px solid rgba(0,240,255,.22);
+    border-radius:16px;
+    background:linear-gradient(135deg,rgba(0,240,255,.07),rgba(255,43,214,.07));
+    padding:16px 16px 6px;
+  }
+  .res-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    gap:12px;padding:9px 0;
+    border-bottom:1px dashed rgba(255,255,255,.08);
+  }
+  .res-row:last-child{border-bottom:0}
+  .res-label{font-size:12.5px;color:var(--muted);font-weight:600;letter-spacing:.3px}
+  .res-val{
+    font-size:20px;font-weight:800;
+    font-variant-numeric:tabular-nums;
+    color:var(--lime);
+    text-shadow:0 0 16px rgba(141,255,94,.45);
+    white-space:nowrap;
+  }
+  .res-val small{font-size:12px;font-weight:700;opacity:.7;margin-left:3px}
+  .res-val.alt{color:var(--cyan);text-shadow:0 0 16px rgba(0,240,255,.5)}
+  .res-val.mag{color:var(--magenta);text-shadow:0 0 16px rgba(255,43,214,.5)}
+
+  .hint{
+    margin-top:10px;font-size:11.5px;color:var(--muted);
+    text-align:center;line-height:1.5;
+  }
+
+  /* SEO */
+  .seo{
+    margin-top:22px;
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:18px;
+    background:rgba(255,255,255,.02);
+    padding:20px 20px;
+  }
+  .seo h2{
+    font-size:15px;letter-spacing:.5px;text-transform:uppercase;
+    color:var(--cyan);margin-bottom:12px;font-weight:800;
+    text-shadow:0 0 18px rgba(0,240,255,.35);
+  }
+  .seo p{font-size:13.5px;line-height:1.65;color:#a9b8d0;margin-bottom:12px}
+  .seo p:last-child{margin-bottom:0}
+  .seo b{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Калькулятор кубатуры доски и бруса</h1>
+  <p class="sub">Объём · Площадь · Количество штук в кубе</p>
+
+  <div class="card">
+
+    <div class="tabs">
+      <button class="tab active" data-tab="p1">Доска / Брус</button>
+      <button class="tab" data-tab="p2">Расчёт по кубам</button>
+    </div>
+
+    <!-- ВКЛАДКА 1 -->
+    <div class="pane active" id="p1">
+      <div class="field">
+        <label>Длина</label>
+        <div class="input-wrap">
+          <input type="number" id="l1" value="6" min="0" step="0.01" inputmode="decimal">
+          <span class="unit">м</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Ширина</label>
+        <div class="input-wrap">
+          <input type="number" id="w1" value="150" min="0" step="1" inputmode="decimal">
+          <span class="unit">мм</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Толщина</label>
+        <div class="input-wrap">
+          <input type="number" id="t1" value="50" min="0" step="1" inputmode="decimal">
+          <span class="unit">мм</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Количество</label>
+        <div class="input-wrap">
+          <input type="number" id="q1" value="10" min="0" step="1" inputmode="decimal">
+          <span class="unit">шт</span>
+        </div>
+      </div>
+
+      <div class="results">
+        <div class="res-row">
+          <span class="res-label">Объём партии</span>
+          <span class="res-val" id="r1-vol">—</span>
+        </div>
+        <div class="res-row">
+          <span class="res-label">Общая площадь</span>
+          <span class="res-val alt" id="r1-area">—</span>
+        </div>
+        <div class="res-row">
+          <span class="res-label">Объём 1 шт</span>
+          <span class="res-val mag" id="r1-one">—</span>
+        </div>
+      </div>
+      <p class="hint">Площадь считается по пласти доски (длина × ширина).</p>
+    </div>
+
+    <!-- ВКЛАДКА 2 -->
+    <div class="pane" id="p2">
+      <div class="field">
+        <label>Общий объём</label>
+        <div class="input-wrap">
+          <input type="number" id="v2" value="1" min="0" step="0.001" inputmode="decimal">
+          <span class="unit">м³</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Длина</label>
+        <div class="input-wrap">
+          <input type="number" id="l2" value="6" min="0" step="0.01" inputmode="decimal">
+          <span class="unit">м</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Ширина</label>
+        <div class="input-wrap">
+          <input type="number" id="w2" value="150" min="0" step="1" inputmode="decimal">
+          <span class="unit">мм</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Толщина</label>
+        <div class="input-wrap">
+          <input type="number" id="t2" value="50" min="0" step="1" inputmode="decimal">
+          <span class="unit">мм</span>
+        </div>
+      </div>
+
+      <div class="results">
+        <div class="res-row">
+          <span class="res-label">Штук в кубе</span>
+          <span class="res-val" id="r2-qty">—</span>
+        </div>
+        <div class="res-row">
+          <span class="res-label">Объём 1 шт</span>
+          <span class="res-val mag" id="r2-one">—</span>
+        </div>
+      </div>
+      <p class="hint">Дробное значение — точный расчёт, целое — сколько войдёт целиком.</p>
+    </div>
+
+  </div>
+
+  <!-- SEO -->
+  <div class="seo">
+    <h2>Как считается кубатура пиломатериала</h2>
+    <p>
+      Кубатура доски или бруса — это объём, который занимает пиломатериал. Считается он по простой формуле:
+      <b>объём одной штуки = длина × ширина × толщина</b>, где длина берётся в метрах, а ширина и толщина — в миллиметрах.
+      Так как миллиметры нужно перевести в метры, итоговая формула выглядит так: <b>V = (Д × Ш × Т) / 1 000 000</b>.
+      Например, доска 6 м × 150 мм × 50 мм: 6 × 150 × 50 / 1 000 000 = <b>0,045 м³</b> за штуку.
+      Чтобы узнать объём всей партии, результат умножают на количество штук.
+    </p>
+    <p>
+      Обратная задача — сколько досок помещается в одном кубометре. Для этого <b>1 м³ делят на объём одной доски</b>.
+      В нашем примере: 1 / 0,045 ≈ <b>22,2 штуки</b>, то есть в куб войдёт 22 целых доски.
+      Отдельно считают площадь: <b>длина × ширина × количество</b> — она нужна, когда пиломатериал покупают
+      на обшивку, обрешётку или настил. Калькулятор выше делает все три расчёта автоматически, без ошибок
+      в округлениях, которые часто возникают при ручном счёте.
+    </p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var fmt = function(n, d){
+    if(!isFinite(n)) return '—';
+    return n.toLocaleString('ru-RU', {minimumFractionDigits:d, maximumFractionDigits:d});
+  };
+  var set = function(id, val, unit){
+    document.getElementById(id).innerHTML = val + (unit ? '<small>'+unit+'</small>' : '');
+  };
+  var num = function(id){
+    var v = parseFloat(document.getElementById(id).value);
+    return isFinite(v) && v > 0 ? v : 0;
+  };
+
+  // Вкладка 1: объём партии + площадь
+  function calc1(){
+    var L = num('l1'), W = num('w1'), T = num('t1'), Q = num('q1');
+    var one = (L * W * T) / 1000000;      // м³ за 1 шт
+    var total = one * Q;                   // м³ партии
+    var area = L * (W / 1000) * Q;         // м² партии (по пласти)
+
+    set('r1-one', fmt(one, 5), 'м³');
+    set('r1-vol', fmt(total, 4), 'м³');
+    set('r1-area', fmt(area, 2), 'м²');
+  }
+
+  // Вкладка 2: сколько штук в кубе
+  function calc2(){
+    var V = num('v2'), L = num('l2'), W = num('w2'), T = num('t2');
+    var one = (L * W * T) / 1000000;
+    var qty = one > 0 ? V / one : 0;
+
+    set('r2-one', fmt(one, 5), 'м³');
+    if(qty > 0){
+      document.getElementById('r2-qty').innerHTML =
+        fmt(qty, 2) + '<small>шт (≈ ' + Math.floor(qty) + ' целых)</small>';
+    } else {
+      document.getElementById('r2-qty').innerHTML = '—';
+    }
+  }
+
+  // Навешиваем обработчики
+  ['l1','w1','t1','q1'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calc1);
+  });
+  ['v2','l2','w2','t2'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calc2);
+  });
+
+  // Табы
+  document.querySelectorAll('.tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+      document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('active');});
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  calc1();
+  calc2();
+})();
+</script>
+</body>
+  </html>
